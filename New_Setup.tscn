@@ -1,0 +1,346 @@
+[gd_scene load_steps=15 format=2]
+
+[ext_resource path="res://textures/Grid/materials/Dark/Texture_01.tres" type="Material" id=5]
+[ext_resource path="res://NewPlayerCode.gd" type="Script" id=6]
+[ext_resource path="res://Misc/Platform.tscn" type="PackedScene" id=7]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Spatial
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+"
+
+[sub_resource type="CapsuleShape" id=2]
+radius = 0.147343
+height = 0.872191
+
+[sub_resource type="RayShape" id=3]
+length = 0.767516
+
+[sub_resource type="CapsuleMesh" id=4]
+radius = 0.147
+
+[sub_resource type="PrismMesh" id=5]
+
+[sub_resource type="Curve3D" id=6]
+_data = {
+"points": PoolVector3Array( 0, 0, 0, 0, 0, 0, 0.0175407, -0.0235806, -0.000843048, 0, 0, 0, 0, 0, 0, -0.0412693, 0.0224771, 2.97234, 0, 0, 0, 0, 0, 0, 0.179395, 0.382079, 5.74412, 0, 0, 0, 0, 0, 0, 0.584536, 0.984794, 8.59973, 0, 0, 0, 0, 0, 0, 1.3427, 1.67179, 11.5247, 0, 0, 0, 0, 0, 0, 2.95446, 1.8911, 14.1621, 0, 0, 0, 0, 0, 0, 5.29885, 2.09209, 16.2623, 0, 0, 0, 0, 0, 0, 8.76659, 2.18218, 18.4602, 0, 0, 0, 0, 0, 0, 12.6251, 2.64822, 19.7545, 0, 0, 0, 0, 0, 0, 16.7277, 3.33976, 20.365, 0, 0, 0, 0, 0, 0, 20.3908, 4.29786, 20.3161 ),
+"tilts": PoolRealArray( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
+}
+
+[sub_resource type="GDScript" id=7]
+script/source = "extends Path
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	get_node(\"AnimationPlayer\").play(\"Path\")
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#	pass
+"
+
+[sub_resource type="Animation" id=8]
+resource_name = "Path"
+length = 20.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("PathFollow:offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 10, 20 ),
+"transitions": PoolRealArray( -2, -2, 1 ),
+"update": 0,
+"values": [ 0.0, 34.261, 0.0 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("PathFollow:rotation_degrees")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 10, 20 ),
+"transitions": PoolRealArray( -2, -2, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, 0 ), Vector3( 0, 90, 0 ), Vector3( 0, 0, 0 ) ]
+}
+
+[sub_resource type="Animation" id=9]
+resource_name = "moving"
+length = 7.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 3.5, 7 ),
+"transitions": PoolRealArray( -2, -2, 1 ),
+"update": 0,
+"values": [ Vector3( -11.0117, 6.4699, -5.65134 ), Vector3( -11.0117, 1.03964, -5.65134 ), Vector3( -11.0117, 6.4699, -5.65134 ) ]
+}
+
+[sub_resource type="ProceduralSky" id=10]
+
+[sub_resource type="Environment" id=11]
+background_mode = 2
+background_sky = SubResource( 10 )
+
+[node name="Setup" type="Spatial"]
+script = SubResource( 1 )
+
+[node name="Objects" type="Spatial" parent="."]
+
+[node name="Models" type="Spatial" parent="Objects"]
+
+[node name="KinematicBody" type="KinematicBody" parent="Objects/Models" groups=[
+"Player",
+]]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.733, 0, -1.25 )
+collision_layer = 0
+script = ExtResource( 6 )
+
+[node name="CollisionShape2" type="CollisionShape" parent="Objects/Models/KinematicBody"]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0.71034, 0 )
+shape = SubResource( 2 )
+
+[node name="CollisionShape3" type="CollisionShape" parent="Objects/Models/KinematicBody"]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0.77047, 1.97683e-08 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Objects/Models/KinematicBody"]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0.649134, 0 )
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="MeshInstance2" type="MeshInstance" parent="Objects/Models/KinematicBody"]
+transform = Transform( 0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 0.649134, -0.622096 )
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="FloorCast" type="RayCast" parent="Objects/Models/KinematicBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.649134, 0 )
+enabled = true
+
+[node name="CamRoot" type="Spatial" parent="Objects/Models/KinematicBody"]
+
+[node name="H" type="Spatial" parent="Objects/Models/KinematicBody/CamRoot"]
+
+[node name="V" type="Spatial" parent="Objects/Models/KinematicBody/CamRoot/H"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.183, 0 )
+
+[node name="Camera" type="Camera" parent="Objects/Models/KinematicBody/CamRoot/H/V"]
+transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 0 )
+
+[node name="ClippedCamera" type="ClippedCamera" parent="Objects/Models/KinematicBody/CamRoot/H/V"]
+transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, -2.279 )
+current = true
+margin = 1.0
+process_mode = 1
+
+[node name="Gravity" type="Position3D" parent="Objects/Models/KinematicBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.43715, 0 )
+
+[node name="Reorientation" type="Position3D" parent="Objects/Models"]
+transform = Transform( 1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 9.98398, 0 )
+
+[node name="Geometry" type="Spatial" parent="Objects"]
+
+[node name="CSGCombiner" type="CSGCombiner" parent="Objects/Geometry"]
+use_collision = true
+
+[node name="CSGBox" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6.45817, -1, 0 )
+width = 43.7444
+depth = 39.5321
+material = ExtResource( 5 )
+
+[node name="CSGBox2" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, -16.7114 )
+width = 31.1486
+height = 0.296158
+depth = 39.5321
+material = ExtResource( 5 )
+
+[node name="CSGBox3" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -15.7762 )
+width = 26.1536
+height = 14.9474
+depth = 15.8597
+material = ExtResource( 5 )
+
+[node name="CSGBox4" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.982, 2, -11.358 )
+operation = 2
+width = 9.98751
+height = 4.0
+depth = 10.2682
+material = ExtResource( 5 )
+
+[node name="CSGBox5" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.993, 3, -12.614 )
+operation = 2
+width = 9.98751
+height = 6.0
+depth = 4.25243
+material = ExtResource( 5 )
+
+[node name="CSGBox7" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 0.941676, 0.33652, 0, -0.33652, 0.941676, 0, 0, 0, 1, -4.65074, -1.16949, -12.614 )
+width = 9.98751
+height = 6.0
+depth = 4.25243
+material = ExtResource( 5 )
+
+[node name="CSGBox6" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 0.750607, -0.660749, 0, 0.660749, 0.750607, 8.20757, -0.123166, -7.69963 )
+material = ExtResource( 5 )
+
+[node name="CSGBox8" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, -7.81144, 4.17286, -16.0182 )
+operation = 2
+width = 16.0134
+height = 3.55932
+depth = 4.25243
+material = ExtResource( 5 )
+
+[node name="CSGBox10" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.81144, 4.18876, -19.7601 )
+operation = 2
+width = 11.582
+height = 3.58908
+depth = 4.25243
+material = ExtResource( 5 )
+
+[node name="CSGBox9" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.97967, 4.2479, -8.71297 )
+operation = 2
+material = ExtResource( 5 )
+
+[node name="CSGBox11" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 0.787355, -0.6165, 0, 0.6165, 0.787355, 0, 0, 0, 1, 2.966, 9.412, -19.782 )
+operation = 2
+width = 16.0134
+height = 3.55932
+depth = 4.25243
+material = ExtResource( 5 )
+
+[node name="CSGBox12" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 0.787355, -0.6165, 0, 0.6165, 0.787355, 0, 0, 0, 1, -1.57694, 3.02446, -19.782 )
+width = 6.29218
+height = 0.892661
+depth = 2.63902
+material = ExtResource( 5 )
+
+[node name="CSGBox13" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.28473, 8.9723, -16.9133 )
+operation = 2
+width = 3.0
+height = 3.0
+depth = 3.0
+material = ExtResource( 5 )
+
+[node name="CSGBox14" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( -1.43276e-07, -0.476039, 0.879424, -7.75565e-08, 0.879424, 0.476039, -1, 0, -1.62921e-07, 15.8073, 8.89573, -20.7124 )
+width = 3.0
+height = 0.352718
+depth = 10.2404
+material = ExtResource( 5 )
+
+[node name="CSGBox15" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 21.7349, 11.3214, -4.82643 )
+width = 3.0
+height = 0.352718
+depth = 34.964
+material = ExtResource( 5 )
+
+[node name="CSGBox16" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( -1.62921e-07, -0.906308, 0.422618, 0, 0.422618, 0.906308, -1, 1.47656e-07, -6.88533e-08, 13.0634, -4.47428, 10.993 )
+width = 3.0
+height = 0.352718
+depth = 34.964
+material = ExtResource( 5 )
+
+[node name="CSGBox17" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( -1.62921e-07, -0.707107, 0.707107, 0, 0.707107, 0.707107, -1, 1.15202e-07, -1.15202e-07, 7.98653, -0.987573, 3.03214 )
+width = 3.0
+height = 0.352718
+depth = 34.964
+material = ExtResource( 5 )
+
+[node name="CSGBox18" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
+transform = Transform( -1.62921e-07, -0.5, 0.866025, 0, 0.866025, 0.5, -1, 8.14603e-08, -1.41093e-07, 5.1962, 2.62417, -2.36309 )
+width = 3.0
+height = 0.352718
+depth = 34.964
+material = ExtResource( 5 )
+
+[node name="Path" type="Path" parent="Objects/Geometry"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.29234, 6.73431, -5.91738 )
+curve = SubResource( 6 )
+script = SubResource( 7 )
+
+[node name="PathFollow" type="PathFollow" parent="Objects/Geometry/Path"]
+transform = Transform( 0.995559, 0, 0.0941078, 0, 0.999999, 0, -0.0941081, 0, 0.995557, 0.012663, -0.0197606, 0.245753 )
+offset = 0.246679
+rotation_mode = 0
+loop = false
+
+[node name="Platform" parent="Objects/Geometry/Path/PathFollow" instance=ExtResource( 7 )]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Objects/Geometry/Path"]
+anims/Path = SubResource( 8 )
+
+[node name="Platform" parent="Objects/Geometry" instance=ExtResource( 7 )]
+
+[node name="StaticBody" parent="Objects/Geometry/Platform" index="0"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -11.0117, 6.4699, -5.65134 )
+
+[node name="AnimationPlayer" parent="Objects/Geometry/Platform/StaticBody" index="2"]
+anims/moving = SubResource( 9 )
+
+[node name="Props" type="Spatial" parent="Objects"]
+
+[node name="Shaders" type="Spatial" parent="Objects"]
+
+[node name="DirectionalLight" type="DirectionalLight" parent="Objects/Shaders"]
+transform = Transform( 0.702886, 0.619196, -0.350068, 0, 0.49215, 0.87051, 0.711303, -0.611869, 0.345925, -15.9504, 7.39276, 0 )
+light_specular = 0.0
+shadow_enabled = true
+directional_shadow_blend_splits = true
+directional_shadow_bias_split_scale = 0.5
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Objects/Shaders"]
+environment = SubResource( 11 )
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[editable path="Objects/Geometry/Path/PathFollow/Platform"]
+[editable path="Objects/Geometry/Platform"]
