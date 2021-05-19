@@ -46,6 +46,14 @@ var alt_rot = Vector3(0,0,0)
 var grv_dif = 0
 var ang_adj = 0
 
+var min_ind = 0
+var min_axis = 0
+
+var old_dir = Vector3()
+var slp_adj = false
+var slp_chk = true
+var old_nrm = Vector3(0,0,0)
+
 
 
 func set_gravity(a):
@@ -102,6 +110,10 @@ func _ready():
 	character = get_node(".")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	$CamRoot.set_as_toplevel(true)
+	$Compass_Pos/Compass.set_as_toplevel(true)
+	$Reorient_Pos.set_as_toplevel(true)
+	$Reorient_Pos2/Pinpoint.set_as_toplevel(true)
+	$Reorient_Pos3/Pinpoint.set_as_toplevel(true)
 
 func _input(event):
 	if event is InputEventMouseMotion:
@@ -116,6 +128,11 @@ func _input(event):
 
 
 func _physics_process(delta):
+
+	$Compass_Pos/Compass.global_transform.origin = $Compass_Pos.global_transform.origin
+	$Reorient_Pos.global_transform.origin = global_transform.origin
+	$Reorient_Pos2/Pinpoint.global_transform.origin = $Reorient_Pos2.global_transform.origin
+	$Reorient_Pos3/Pinpoint.global_transform.origin = $Reorient_Pos3.global_transform.origin
 
 	# Rotating our camera by mouse controls (press Alt+ f4 to quit, just in case)
 	camera = get_node("CamRoot/H/V/Camera").get_global_transform()
@@ -135,6 +152,8 @@ func _physics_process(delta):
 	$CamRoot.global_transform.origin = self.global_transform.origin
 	$CamRoot/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*20)),0))
 	$CamRoot/H/V.rotation_degrees = (Vector3((camrot_v*(delta*20)),0,0))
+	#$Compass_Pos/Compass/COM/COM/Cam_Main/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*20)),0))
+	#$Compass_Pos/Compass/COM/COM/Cam_Main/H/V.rotation_degrees = (Vector3((camrot_v*(delta*20)),0,0))
 
 
 	# Speed Movement and Jump
@@ -217,7 +236,7 @@ func _physics_process(delta):
 			can_jump = true
 			if ang_gate == false:
 				if grv_dif < 0:
-					grv_vel = (global_transform.basis[1].normalized() * delta) * ((-ang_adj * 10) * (abs(mov_speed/400) + abs(con_speed/400)))
+					grv_vel = (global_transform.basis[1].normalized() * delta) * ((-ang_adj * 10) * (abs(mov_speed/400) + abs(con_speed/400) + abs(side_speed/400)))
 				else:
 					grv_vel = Vector3.ZERO
 					pass
@@ -240,10 +259,11 @@ func _physics_process(delta):
 
 
 
-
-
 	# Moving our character (Also used to determine ground collision)
 	var slides = move_and_slide_with_snap(spd_vel + grv_vel, ground * stop, global_transform.basis.y * 800, true)
+
+
+
 
 
 	# Player origin base (Feet)
@@ -269,12 +289,18 @@ func _physics_process(delta):
 
 
 	# (Experimental: Rotates both the Player and the Camera origin based on what the 3D position is rotated [Transform-Wise/ Eulers])
-	if Input.is_action_pressed("orientation"):
-		var reorient = $"/root/Setup/Objects/Models/Reorientation"
-		#print(reorient)
-		#set_rotation(lerp(global_transform.basis.get_euler(),$CamRoot/H.global_transform.basis.get_euler(),.5))
-		set_rotation(lerp(global_transform.basis.get_euler(),reorient.global_transform.basis.get_euler(),.2))
-		$CamRoot.set_rotation(lerp($CamRoot.global_transform.basis.get_euler(),reorient.global_transform.basis.get_euler(),.2))
+	### BUG: If you hold it down, the player will randomly warp elsewhere while on a slope, causing lag to occur.
+	if old_nrm != get_node("FloorCast").get_collision_normal():
+		if Input.is_action_pressed("orientation"):
+			var reorient = $"/root/Setup/Objects/Models/Reorientation"
+			#print(reorient)
+			#$CamRoot.set_rotation(reorient.global_transform.basis.get_euler())
+
+			camrot_h = 0
+
+			$CamRoot.set_rotation($Compass_Pos/Compass/COM/COM.global_transform.basis.get_euler())
+
+			old_nrm = get_node("FloorCast").get_collision_normal()
 
 	# Alternate character collison detection
 	var tilt = move_and_collide(global_transform.origin,true,true,true)
@@ -303,12 +329,71 @@ func _physics_process(delta):
 
 
 
+	### Normals Rotation Calculation, used to rotate "Compass_Pos" Node
+	### Below VVV (Line 364 -> 375)
+	
+	var new_normal = get_node("FloorCast").get_collision_normal()
+	var new_point = get_node("FloorCast").get_collision_point()
+
+	#Find the axis with the smallest component
+	if abs(new_normal.x) < min_axis:
+		min_ind = 0
+		min_axis = abs(new_normal.x)
+
+	if abs(new_normal.y) < min_axis:
+		min_ind = 1
+		min_axis = abs(new_normal.y)
+
+	if abs(new_normal.z) < min_axis:
+		min_ind = 2
+	var right
+	#Leave the minimum axis in its place, swap the two other to get a vector perpendicular to the normal vector
+	if min_ind == 0:
+		right = Vector3(new_normal.x, -new_normal.z, new_normal.y)
+	elif min_ind == 1:
+		right = Vector3(-new_normal.z, new_normal.y, new_normal.x)
+	elif min_ind == 2:
+		right = Vector3(-new_normal.y, new_normal.x, new_normal.z)
+		
+	var up = new_normal.cross(right)
+	var basis = Basis(right, up, new_normal)
+
+
+
+
+	### This where the "Compass_Pos" node is used to calculate the normals rotation,
+	### another line deals with the normals above (LINE 332 -> 359)
+	#$Label.text = str(global_transform.basis.get_rotation_quat())
+	
+	if slp_adj == true:
+		$Compass_Pos/Compass/COM.look_at_from_position($Reorient_Pos/Pinpoint.global_transform.origin, new_point, global_transform.basis.z)
+	elif slp_adj == false:
+		$Compass_Pos/Compass/COM.look_at_from_position($Reorient_Pos3/Pinpoint.global_transform.origin, $Reorient_Pos2/Pinpoint.global_transform.origin, global_transform.basis.z)
+	#$Compass_Pos/Compass/COM.look_at(new_point,global_transform.basis.y)
+	
+	$Label.text = str(basis.get_euler())
+	$Reorient_Pos.rotation = basis.get_euler()
+
+
+
+
 
 	# Used to determine if on a slope or not (Slopes / Part 2)
 	if test_move(global_transform,down,true):
 		can_jump = true
 		#print("Ground!")
 		var n = get_node("FloorCast").get_collision_normal()
+		#print(get_node(str(get_path_to(get_node("FloorCast").get_collider()))))
+		if get_node(str(get_path_to(get_node("FloorCast").get_collider()))) == null:
+			slp_adj = false
+			pass
+		else:
+			if get_node(str(get_path_to(get_node("FloorCast").get_collider()))).is_in_group("Tilt"):
+				slp_adj = true
+			else:
+				slp_adj = true
+
+			pass
 
 
 	# Current Bug/Issue: Somewhat works but moving platforms could use some
@@ -355,17 +440,22 @@ func _physics_process(delta):
 
 		#var floor_angle = rad2deg(acos(n.dot(Vector3(0,1,0))))
 		var floor_angle = rad2deg(acos(n.dot(global_transform.basis.y)))
+		var x_ax = acos(n.dot(global_transform.basis.x)) - deg2rad(90)
+		var y_ax = acos(n.dot(global_transform.basis.y))
+		var z_ax = acos(n.dot(global_transform.basis.z)) - deg2rad(90)
 		ang_adj = floor_angle
-		#print(floor_angle)
+		#print(Vector3(rad2deg(x_ax),rad2deg(y_ax),rad2deg(z_ax)))
+		#print(Vector3(x_ax,y_ax,z_ax))
+		#print(n)
 		if floor_angle > 0:
 			ang_grav = true
-			if floor_angle > 60:
-				$CollisionShape3.shape.slips_on_slope = true
-				ang_gate = true
-			else:
-				$CollisionShape3.shape.slips_on_slope = false
-				ang_gate = false
-			pass
+#			if floor_angle > 60:
+#				$CollisionShape3.shape.slips_on_slope = true
+#				ang_gate = true
+#			else:
+#				$CollisionShape3.shape.slips_on_slope = false
+#				ang_gate = false
+#			pass
 		else:
 			ang_grav = false
 
@@ -378,7 +468,6 @@ func _physics_process(delta):
 
 	# if tilt is colliding
 	if tilt:
-		
 		pass
 
 
@@ -405,6 +494,8 @@ func _physics_process(delta):
 	# Used to calculate whether the gravity (global_transform.basis.y is positive/negative; Going up or down)
 	# Recommended for the slope code at 
 	set_gravity(global_transform.basis.xform_inv(global_transform.origin).y)
+
+	old_dir = global_transform.origin
 
 	# Orthonormalizing the global_transform
 	global_transform = global_transform.orthonormalized()
