@@ -45,6 +45,11 @@ var rot_vel = Vector3(0,0,0) setget set_rot, get_rot
 var alt_rot = Vector3(0,0,0)
 var grv_dif = 0
 var ang_adj = 0
+var alternate = 0
+var rot_x_blk = false setget chk_x_rot
+var old_x_rot = 0
+var avatar_rot = Vector3()
+var avatar_chk = false
 
 
 
@@ -96,12 +101,22 @@ func get_rot():
 
 
 
+func chk_x_rot(a):
+	if old_x_rot == 0:
+		pass
+	elif old_x_rot != a:
+		rot_x_blk = true
+	old_x_rot = a
+	pass
+
+
 
 
 func _ready():
 	character = get_node(".")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	$CamRoot.set_as_toplevel(true)
+	#$Rotation.set_as_toplevel(true)
 
 func _input(event):
 	if event is InputEventMouseMotion:
@@ -119,6 +134,7 @@ func _physics_process(delta):
 
 	# Rotating our camera by mouse controls (press Alt+ f4 to quit, just in case)
 	camera = get_node("CamRoot/H/V/Camera").get_global_transform()
+	
 
 	if abs(Input.get_joy_axis(0,JOY_AXIS_2)) > deadZone:
 		#print("Foward")
@@ -135,27 +151,28 @@ func _physics_process(delta):
 	$CamRoot.global_transform.origin = self.global_transform.origin
 	$CamRoot/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*20)),0))
 	$CamRoot/H/V.rotation_degrees = (Vector3((camrot_v*(delta*20)),0,0))
+	#$Rotation.global_transform.origin = self.global_transform.origin
 
 
 	# Speed Movement and Jump
 
 	# (Keyboard Controls)
 	if Input.is_action_pressed("left"):
-		side_speed = lerp(side_speed, 800, .1)
+		side_speed = lerp(side_speed, 400, .1)
 		is_moving = true
 		pass
 	elif Input.is_action_pressed("right"):
-		side_speed = lerp(side_speed, -800, .1)
+		side_speed = lerp(side_speed, -400, .1)
 		is_moving = true
 	else:
 		side_speed = lerp(side_speed, 0, .1)
 		#is_moving = false
 
 	if Input.is_action_pressed("up"):
-		mov_speed = lerp(mov_speed, 800, .1)
+		mov_speed = lerp(mov_speed, 400, .1)
 		is_moving = true
 	elif Input.is_action_pressed("down"):
-		mov_speed = lerp(mov_speed, -800, .1)
+		mov_speed = lerp(mov_speed, -400, .1)
 		is_moving = true
 	else:
 		mov_speed = lerp(mov_speed, 0, .1)
@@ -169,23 +186,23 @@ func _physics_process(delta):
 
 	# (Xbox Controller)
 	if abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone:
-		print("Foward")
-		con_speed = lerp(con_speed, 800, .1)
-		con_vel.x = lerp(con_vel.x, -Input.get_joy_axis(0,JOY_AXIS_0) * 800, .1)
+		#print("Foward")
+		con_speed = lerp(con_speed, 400, .1)
+		con_vel.x = lerp(con_vel.x, -Input.get_joy_axis(0,JOY_AXIS_0) * 400, .1)
 		is_moving = true
 	else:
 		con_vel.x = lerp(con_vel.x, 0, .1)
 
 	if abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone:
-		print("Sideway")
-		con_speed = lerp(con_speed, 800, .1)
-		con_vel.y = lerp(con_vel.y, -Input.get_joy_axis(0,JOY_AXIS_1) * 800, .1)
+		#print("Sideway")
+		con_speed = lerp(con_speed, 400, .1)
+		con_vel.y = lerp(con_vel.y, -Input.get_joy_axis(0,JOY_AXIS_1) * 400, .1)
 		is_moving = true
 	else:
 		con_vel.y = lerp(con_vel.y, 0, .1)
 
-	if abs(Input.get_joy_axis(0,JOY_AXIS_0)) < deadZone and abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone:
-		con_speed = lerp(con_speed, 800, .1)
+	if abs(Input.get_joy_axis(0,JOY_AXIS_0)) < deadZone and abs(Input.get_joy_axis(0,JOY_AXIS_1)) < deadZone:
+		con_speed = lerp(con_speed, 0, .1)
 
 
 	# Keyboard and Controller velocities are combined
@@ -217,7 +234,7 @@ func _physics_process(delta):
 			can_jump = true
 			if ang_gate == false:
 				if grv_dif < 0:
-					grv_vel = (global_transform.basis[1].normalized() * delta) * ((-ang_adj * 10) * (abs(mov_speed/400) + abs(con_speed/400)))
+					grv_vel = (global_transform.basis[1].normalized() * delta) * ((-ang_adj * 10) * (abs(mov_speed/400) + abs(con_speed/400) + abs(side_speed/400)))
 				else:
 					grv_vel = Vector3.ZERO
 					pass
@@ -255,17 +272,86 @@ func _physics_process(delta):
 		#print("Ceiling!")
 		grv_vel = grv_vel * -1
 
-
+	#print(global_transform.basis.get_euler().normalized())
+	#print(round(rad2deg(abs($Rotation.rotation.y))))
+	
+#	if (round(rad2deg(abs(rotation.y)))) >= 180:
+#		print("Detect!")
+#	else:
+#		print("")
 
 	# Freezes player rotation while moving
 	if is_moving && !Input.is_key_pressed(KEY_SHIFT):
 		set_rotation($CamRoot/H.global_transform.basis.get_euler())
+		#set_rotation(lerp(rotation,$CamRoot/H.global_transform.basis.get_euler(),.9))
+
 
 	# Rotates when the controller joystick is tilted (Gamepad/Controller Only)
-	elif abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone:
-		set_rotation($CamRoot/H.global_transform.basis.get_euler())
-		pass
+	if (Input.is_joy_button_pressed(0,JOY_R2)):
+		$Rotation.set_as_toplevel(true)
+		avatar_chk = true
+		avatar_rot = $Rotation.global_transform.basis.get_euler()
+		if (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
+#			if avatar_chk == true:
+#				$Rotation.rotation = avatar_rot
+#				$Rotation.set_as_toplevel(false)
+#				avatar_chk = false
+			$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,$CamRoot/H.global_transform.basis.get_euler().y, delta * (50))
+			$Rotation.global_transform.origin = global_transform.origin
+			pass
+		else:
+			$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,$CamRoot/H.global_transform.basis.get_euler().y, delta * (50))
+			$Rotation.global_transform.origin = global_transform.origin
+	else:
+		if (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
+			
 
+			if avatar_chk == true:
+				$Rotation.rotation = avatar_rot
+				$Rotation.set_as_toplevel(false)
+				avatar_chk = false
+	#		if rad2deg(global_transform.basis.get_euler().y) == 180:
+	#			print("pass")
+			
+			#print(atan2(Input.get_joy_axis(0,JOY_AXIS_1),Input.get_joy_axis(0,JOY_AXIS_0)))
+			var tlt_dis = Vector3.ZERO.distance_to(Vector3(Input.get_joy_axis(0,JOY_AXIS_0),0,Input.get_joy_axis(0,JOY_AXIS_1)))
+			#print(tlt_dis)
+			if (round(rad2deg(abs(rotation.y)))) >= 178.5 + tlt_dis:
+	#			print($Rotation.rotation.y)
+	#			if global_transform.basis.get_euler().normalized().y == 1:
+	#				#alternate = (deg2rad(180) + $Rotation.rotation.y) + (deg2rad(180))
+	#				print($Rotation.rotation.y)
+	#				#$Rotation.rotation.y = (deg2rad(-180) + $Rotation.rotation.y) + (deg2rad(-180))
+	#			if global_transform.basis.get_euler().normalized().y == -1:
+	#				#alternate = (deg2rad(180) + $Rotation.rotation.y) + (deg2rad(180))
+	#				print($Rotation.rotation.y)
+	#				#$Rotation.rotation.y = (deg2rad(180) + $Rotation.rotation.y) + (deg2rad(180))
+				chk_x_rot(global_transform.basis.get_euler().normalized().y)
+				if rot_x_blk == true:
+					var calculate = 180 - abs(rad2deg($Rotation.rotation.y))
+					#print(calculate + 180)
+					#print(abs(rad2deg($Rotation.rotation.y)))
+					get_node("Label").text = str(calculate + 180 * global_transform.basis.get_euler().normalized().y)
+					#print(calculate + 180 * global_transform.basis.get_euler().normalized().y)
+					rot_x_blk = false
+				else:
+					pass
+			#$Rotation.rotation = $Rotation.rotation.linear_interpolate(global_transform.basis.get_euler(),.1)
+			$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,(atan2(Input.get_joy_axis(0,JOY_AXIS_1),-Input.get_joy_axis(0,JOY_AXIS_0)) + deg2rad(90)), delta * (5 * tlt_dis))
+			#$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,(atan2(Input.get_joy_axis(0,JOY_AXIS_1),-Input.get_joy_axis(0,JOY_AXIS_0)) + deg2rad(89)) * (tlt_dis * -Vector3(Input.get_joy_axis(0,JOY_AXIS_2),0,Input.get_joy_axis(0,JOY_AXIS_3)).normalized().x), .03)
+
+
+			set_rotation($CamRoot/H.global_transform.basis.get_euler())
+			#set_rotation(lerp(rotation,$CamRoot/H.global_transform.basis.get_euler(),.9))
+			pass
+		else:
+			$Rotation.set_as_toplevel(true)
+			$Rotation.global_transform.origin = global_transform.origin
+			#$Rotation.global_transform.basis = global_transform.basis
+			avatar_rot = $Rotation.global_transform.basis.get_euler()
+			avatar_chk = true
+			pass
+#	print($Rotation.global_transform.basis.get_euler().y)
 
 
 	# (Experimental: Rotates both the Player and the Camera origin based on what the 3D position is rotated [Transform-Wise/ Eulers])

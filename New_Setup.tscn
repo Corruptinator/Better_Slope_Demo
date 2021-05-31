@@ -123,7 +123,7 @@ script = SubResource( 1 )
 [node name="KinematicBody" type="KinematicBody" parent="Objects/Models" groups=[
 "Player",
 ]]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.733, 0, -1.25 )
+transform = Transform( 0.670932, 0, 0.741519, 0, 1, 0, -0.741519, 0, 0.670932, -5.733, 0, -1.25 )
 collision_layer = 0
 script = ExtResource( 6 )
 
@@ -138,11 +138,6 @@ shape = SubResource( 3 )
 [node name="MeshInstance" type="MeshInstance" parent="Objects/Models/KinematicBody"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0.649134, 0 )
 mesh = SubResource( 4 )
-material/0 = null
-
-[node name="MeshInstance2" type="MeshInstance" parent="Objects/Models/KinematicBody"]
-transform = Transform( 0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 0.649134, -0.622096 )
-mesh = SubResource( 5 )
 material/0 = null
 
 [node name="FloorCast" type="RayCast" parent="Objects/Models/KinematicBody"]
@@ -167,6 +162,44 @@ process_mode = 1
 
 [node name="Gravity" type="Position3D" parent="Objects/Models/KinematicBody"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.43715, 0 )
+
+[node name="Mesh_Foll" type="MeshInstance" parent="Objects/Models/KinematicBody"]
+transform = Transform( 0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 0, 0 )
+visible = false
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="Grnd_Foll" type="MeshInstance" parent="Objects/Models/KinematicBody"]
+transform = Transform( 0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 0, 0 )
+visible = false
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="Rotation" type="Position3D" parent="Objects/Models/KinematicBody"]
+
+[node name="MeshInstance2" type="MeshInstance" parent="Objects/Models/KinematicBody/Rotation"]
+transform = Transform( 0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 0.649134, -0.622096 )
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="MeshInstance3" type="MeshInstance" parent="Objects/Models/KinematicBody/Rotation"]
+transform = Transform( 0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 1.62227, 0 )
+visible = false
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="Label" type="Label" parent="Objects/Models/KinematicBody"]
+margin_left = 41.0
+margin_top = 36.0
+margin_right = 97.0
+margin_bottom = 50.0
+rect_scale = Vector2( 3, 3 )
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "Counting"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Reorientation" type="Position3D" parent="Objects/Models"]
 transform = Transform( 1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 9.98398, 0 )
