@@ -158,21 +158,21 @@ func _physics_process(delta):
 
 	# (Keyboard Controls)
 	if Input.is_action_pressed("left"):
-		side_speed = lerp(side_speed, 400, .1)
+		side_speed = lerp(side_speed, 800, .1)
 		is_moving = true
 		pass
 	elif Input.is_action_pressed("right"):
-		side_speed = lerp(side_speed, -400, .1)
+		side_speed = lerp(side_speed, -800, .1)
 		is_moving = true
 	else:
 		side_speed = lerp(side_speed, 0, .1)
 		#is_moving = false
 
 	if Input.is_action_pressed("up"):
-		mov_speed = lerp(mov_speed, 400, .1)
+		mov_speed = lerp(mov_speed, 800, .1)
 		is_moving = true
 	elif Input.is_action_pressed("down"):
-		mov_speed = lerp(mov_speed, -400, .1)
+		mov_speed = lerp(mov_speed, -800, .1)
 		is_moving = true
 	else:
 		mov_speed = lerp(mov_speed, 0, .1)
@@ -188,7 +188,7 @@ func _physics_process(delta):
 	if abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone:
 		#print("Foward")
 		con_speed = lerp(con_speed, 400, .1)
-		con_vel.x = lerp(con_vel.x, -Input.get_joy_axis(0,JOY_AXIS_0) * 400, .1)
+		con_vel.x = lerp(con_vel.x, -Input.get_joy_axis(0,JOY_AXIS_0) * 800, .1)
 		is_moving = true
 	else:
 		con_vel.x = lerp(con_vel.x, 0, .1)
@@ -196,7 +196,7 @@ func _physics_process(delta):
 	if abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone:
 		#print("Sideway")
 		con_speed = lerp(con_speed, 400, .1)
-		con_vel.y = lerp(con_vel.y, -Input.get_joy_axis(0,JOY_AXIS_1) * 400, .1)
+		con_vel.y = lerp(con_vel.y, -Input.get_joy_axis(0,JOY_AXIS_1) * 800, .1)
 		is_moving = true
 	else:
 		con_vel.y = lerp(con_vel.y, 0, .1)
@@ -280,17 +280,87 @@ func _physics_process(delta):
 #	else:
 #		print("")
 
+
+
+
+
+
 	# Freezes player rotation while moving
 	if is_moving && !Input.is_key_pressed(KEY_SHIFT):
 		set_rotation($CamRoot/H.global_transform.basis.get_euler())
 		#set_rotation(lerp(rotation,$CamRoot/H.global_transform.basis.get_euler(),.9))
 
 
+
+
+	if Input.is_mouse_button_pressed(2):
+		if !Input.is_joy_button_pressed(0,JOY_R2):
+			$Rotation.set_as_toplevel(true)
+			avatar_chk = true
+			avatar_rot = $Rotation.global_transform.basis.get_euler()
+		if (Input.is_action_pressed("up") or Input.is_action_pressed("down") or Input.is_action_pressed("left") or Input.is_action_pressed("right")):
+#			if avatar_chk == true:
+#				$Rotation.rotation = avatar_rot
+#				$Rotation.set_as_toplevel(false)
+#				avatar_chk = false
+			$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,$CamRoot/H.global_transform.basis.get_euler().y, delta * (50))
+			$Rotation.global_transform.origin = global_transform.origin
+			pass
+		else:
+			$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,$CamRoot/H.global_transform.basis.get_euler().y, delta * (50))
+			$Rotation.global_transform.origin = global_transform.origin
+		pass
+	else:
+		if Input.is_action_pressed("up") or Input.is_action_pressed("down") or Input.is_action_pressed("left") or Input.is_action_pressed("right"):
+			
+			if avatar_chk == true:
+				$Rotation.rotation = avatar_rot
+				$Rotation.set_as_toplevel(false)
+				avatar_chk = false
+			
+
+			if Input.is_action_pressed("up") and Input.is_action_pressed("left"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(45), delta * (5))
+				pass
+			elif Input.is_action_pressed("up") and Input.is_action_pressed("right"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(-45), delta * (5))
+				pass
+			elif Input.is_action_pressed("down") and Input.is_action_pressed("left"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(135), delta * (5))
+				pass
+			elif Input.is_action_pressed("down") and Input.is_action_pressed("right"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(-135), delta * (5))
+				pass
+
+			elif Input.is_action_pressed("up"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(0), delta * (5))
+				pass
+			elif Input.is_action_pressed("down"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(180), delta * (5))
+				pass
+			elif Input.is_action_pressed("left"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(90), delta * (5))
+				pass
+			elif Input.is_action_pressed("right"):
+				$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,deg2rad(-90), delta * (5))
+				pass
+
+			pass
+		else:
+			$Rotation.set_as_toplevel(true)
+			$Rotation.global_transform.origin = global_transform.origin
+			#$Rotation.global_transform.basis = global_transform.basis
+			avatar_rot = $Rotation.global_transform.basis.get_euler()
+			avatar_chk = true
+			pass
+
+
 	# Rotates when the controller joystick is tilted (Gamepad/Controller Only)
 	if (Input.is_joy_button_pressed(0,JOY_R2)):
-		$Rotation.set_as_toplevel(true)
-		avatar_chk = true
-		avatar_rot = $Rotation.global_transform.basis.get_euler()
+		if !Input.is_mouse_button_pressed(2):
+			$Rotation.set_as_toplevel(true)
+			avatar_chk = true
+			avatar_rot = $Rotation.global_transform.basis.get_euler()
 		if (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
 #			if avatar_chk == true:
 #				$Rotation.rotation = avatar_rot
@@ -304,39 +374,14 @@ func _physics_process(delta):
 			$Rotation.global_transform.origin = global_transform.origin
 	else:
 		if (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
-			
 
 			if avatar_chk == true:
 				$Rotation.rotation = avatar_rot
 				$Rotation.set_as_toplevel(false)
 				avatar_chk = false
-	#		if rad2deg(global_transform.basis.get_euler().y) == 180:
-	#			print("pass")
-			
-			#print(atan2(Input.get_joy_axis(0,JOY_AXIS_1),Input.get_joy_axis(0,JOY_AXIS_0)))
+
 			var tlt_dis = Vector3.ZERO.distance_to(Vector3(Input.get_joy_axis(0,JOY_AXIS_0),0,Input.get_joy_axis(0,JOY_AXIS_1)))
-			#print(tlt_dis)
-			if (round(rad2deg(abs(rotation.y)))) >= 178.5 + tlt_dis:
-	#			print($Rotation.rotation.y)
-	#			if global_transform.basis.get_euler().normalized().y == 1:
-	#				#alternate = (deg2rad(180) + $Rotation.rotation.y) + (deg2rad(180))
-	#				print($Rotation.rotation.y)
-	#				#$Rotation.rotation.y = (deg2rad(-180) + $Rotation.rotation.y) + (deg2rad(-180))
-	#			if global_transform.basis.get_euler().normalized().y == -1:
-	#				#alternate = (deg2rad(180) + $Rotation.rotation.y) + (deg2rad(180))
-	#				print($Rotation.rotation.y)
-	#				#$Rotation.rotation.y = (deg2rad(180) + $Rotation.rotation.y) + (deg2rad(180))
-				chk_x_rot(global_transform.basis.get_euler().normalized().y)
-				if rot_x_blk == true:
-					var calculate = 180 - abs(rad2deg($Rotation.rotation.y))
-					#print(calculate + 180)
-					#print(abs(rad2deg($Rotation.rotation.y)))
-					get_node("Label").text = str(calculate + 180 * global_transform.basis.get_euler().normalized().y)
-					#print(calculate + 180 * global_transform.basis.get_euler().normalized().y)
-					rot_x_blk = false
-				else:
-					pass
-			#$Rotation.rotation = $Rotation.rotation.linear_interpolate(global_transform.basis.get_euler(),.1)
+
 			$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,(atan2(Input.get_joy_axis(0,JOY_AXIS_1),-Input.get_joy_axis(0,JOY_AXIS_0)) + deg2rad(90)), delta * (5 * tlt_dis))
 			#$Rotation.rotation.y = lerp_angle($Rotation.rotation.y ,(atan2(Input.get_joy_axis(0,JOY_AXIS_1),-Input.get_joy_axis(0,JOY_AXIS_0)) + deg2rad(89)) * (tlt_dis * -Vector3(Input.get_joy_axis(0,JOY_AXIS_2),0,Input.get_joy_axis(0,JOY_AXIS_3)).normalized().x), .03)
 
@@ -351,7 +396,33 @@ func _physics_process(delta):
 			avatar_rot = $Rotation.global_transform.basis.get_euler()
 			avatar_chk = true
 			pass
-#	print($Rotation.global_transform.basis.get_euler().y)
+
+
+#	if (Input.is_joy_button_pressed(0,JOY_R2) or Input.is_mouse_button_pressed(2)):
+#		$Rotation.set_as_toplevel(true)
+#		avatar_chk = true
+#		avatar_rot = $Rotation.global_transform.basis.get_euler()
+#		pass
+#	else:
+#		pass
+
+
+#	if ( (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone) or (Input.is_action_pressed("up") or Input.is_action_pressed("down") or Input.is_action_pressed("left") or Input.is_action_pressed("right")) ):
+#
+#		if avatar_chk == true:
+#			$Rotation.rotation = avatar_rot
+#			$Rotation.set_as_toplevel(false)
+#			avatar_chk = false
+#
+#	else:
+#
+#		$Rotation.set_as_toplevel(true)
+#		$Rotation.global_transform.origin = global_transform.origin
+#		#$Rotation.global_transform.basis = global_transform.basis
+#		avatar_rot = $Rotation.global_transform.basis.get_euler()
+#		avatar_chk = true
+
+
 
 
 	# (Experimental: Rotates both the Player and the Camera origin based on what the 3D position is rotated [Transform-Wise/ Eulers])
