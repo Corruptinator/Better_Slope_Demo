@@ -16,9 +16,12 @@ config/icon="res://icon.png"
 
 [display]
 
-window/size/width=1920
-window/size/height=1080
+window/size/width=480
+window/size/height=270
+window/size/test_width=1920
+window/size/test_height=1080
 window/dpi/allow_hidpi=true
+window/stretch/mode="viewport"
 
 [input]
 
@@ -65,5 +68,5 @@ common/physics_fps=120
 
 [rendering]
 
-quality/filters/msaa=3
+quality/filters/anisotropic_filter_level=16
 environment/default_environment="res://default_env.tres"

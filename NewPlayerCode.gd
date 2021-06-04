@@ -41,6 +41,8 @@ var is_grnd = false
 var new_grv = 0 setget set_gravity, get_gravity
 var vel_cal = Vector3(0,0,0) setget set_velocity, get_velocity
 var alt_vel = Vector3(0,0,0)
+var dif_vel_cal = Vector3(0,0,0) setget set_dif_velocity, get_dif_velocity
+var alt_dif_vel = Vector3(0,0,0)
 var rot_vel = Vector3(0,0,0) setget set_rot, get_rot
 var alt_rot = Vector3(0,0,0)
 var grv_dif = 0
@@ -50,6 +52,10 @@ var rot_x_blk = false setget chk_x_rot
 var old_x_rot = 0
 var avatar_rot = Vector3()
 var avatar_chk = false
+var platform = false
+var plat_vel = Vector3(0,0,0)
+var plat_smth = 0
+var plat_rot = Vector3(0,0,0)
 
 
 
@@ -88,6 +94,22 @@ func get_velocity():
 	
 	return alt_vel
 
+func set_dif_velocity(a):
+	if dif_vel_cal != a:
+		#print(vel_cal - (-a))
+		#print( -23 - (-23))
+		#vel_cal = a
+		alt_dif_vel = dif_vel_cal - (a)
+		dif_vel_cal = a
+#	if a == Vector3(0,0,0):
+#		alt_dif_vel = Vector3(0,0,0)
+#		pass
+	pass
+
+func get_dif_velocity():
+	
+	return alt_dif_vel
+
 
 
 func set_rot(a):
@@ -116,6 +138,9 @@ func _ready():
 	character = get_node(".")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	$CamRoot.set_as_toplevel(true)
+	
+	dif_vel_cal = get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin
+	
 	#$Rotation.set_as_toplevel(true)
 
 func _input(event):
@@ -149,8 +174,8 @@ func _physics_process(delta):
 		pass
 
 	$CamRoot.global_transform.origin = self.global_transform.origin
-	$CamRoot/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*20)),0))
-	$CamRoot/H/V.rotation_degrees = (Vector3((camrot_v*(delta*20)),0,0))
+	$CamRoot/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*80)),0))
+	$CamRoot/H/V.rotation_degrees = (Vector3((camrot_v*(delta*80)),0,0))
 	#$Rotation.global_transform.origin = self.global_transform.origin
 
 
@@ -187,7 +212,7 @@ func _physics_process(delta):
 	# (Xbox Controller)
 	if abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone:
 		#print("Foward")
-		con_speed = lerp(con_speed, 400, .1)
+		con_speed = lerp(con_speed, 800, .1)
 		con_vel.x = lerp(con_vel.x, -Input.get_joy_axis(0,JOY_AXIS_0) * 800, .1)
 		is_moving = true
 	else:
@@ -195,7 +220,7 @@ func _physics_process(delta):
 
 	if abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone:
 		#print("Sideway")
-		con_speed = lerp(con_speed, 400, .1)
+		con_speed = lerp(con_speed, 800, .1)
 		con_vel.y = lerp(con_vel.y, -Input.get_joy_axis(0,JOY_AXIS_1) * 800, .1)
 		is_moving = true
 	else:
@@ -256,11 +281,23 @@ func _physics_process(delta):
 		stop = 1
 
 
-
-
+	set_rot(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.basis.get_euler())
+	set_dif_velocity(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin)
+	#set_dif_velocity(get_node("../../../Objects/Geometry/Path/PathFollow/Platform/Raycaster/Spinner/RayCast").get_collision_point())
+	get_node("Label").text = str(get_dif_velocity())
+	if platform == true:
+		plat_rot = -get_rot()
+		plat_vel = -get_dif_velocity()
+	elif platform == false:
+		plat_rot = Vector3(0,0,0)
+		plat_vel = Vector3(0,0,0)
 
 	# Moving our character (Also used to determine ground collision)
-	var slides = move_and_slide_with_snap(spd_vel + grv_vel, ground * stop, global_transform.basis.y * 800, true)
+	#var slides = move_and_slide_with_snap(spd_vel + grv_vel, ground * stop, global_transform.basis.y * 800, true)
+	var slides = move_and_slide_with_snap((spd_vel + grv_vel) + ((plat_vel * delta) * 14500), ground * stop, global_transform.basis.y * 800, true)
+	#var slides = move_and_slide_with_snap((spd_vel + grv_vel) + ((plat_vel * delta) * 14250), ground * stop, global_transform.basis.y * 800, true)
+	#var slides = move_and_slide_with_snap(((-get_dif_velocity() * delta) * 14250), ground * stop, global_transform.basis.y * 110, true)
+	#var slides = move_and_slide_with_snap(spd_vel + grv_vel, get_floor_normal() * stop, global_transform.basis.y * 800, true)
 
 
 	# Player origin base (Feet)
@@ -290,7 +327,24 @@ func _physics_process(delta):
 		set_rotation($CamRoot/H.global_transform.basis.get_euler())
 		#set_rotation(lerp(rotation,$CamRoot/H.global_transform.basis.get_euler(),.9))
 
+#	if !is_moving:
+#		plat_smth += .25 
+#		if plat_smth > 1:
+#			plat_smth = 1
+#	elif is_moving:
+#		plat_smth -= .25 
+#		if plat_smth < 0:
+#			plat_smth = 0
+	#print(plat_smth)
+	
+	#print(global_transform.xform(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin))
+	
+	if !is_moving:
+		plat_smth = lerp(plat_smth,1,.1)
+	elif is_moving:
+		plat_smth = 0
 
+	#plat_smth = plat_smth * delta
 
 
 	if Input.is_mouse_button_pressed(2):
@@ -397,6 +451,9 @@ func _physics_process(delta):
 			avatar_chk = true
 			pass
 
+	if $Rotation.is_set_as_toplevel():
+		$Rotation.rotation += plat_rot
+
 
 #	if (Input.is_joy_button_pressed(0,JOY_R2) or Input.is_mouse_button_pressed(2)):
 #		$Rotation.set_as_toplevel(true)
@@ -472,42 +529,37 @@ func _physics_process(delta):
 	# work.
 		var floor_type = get_node(get_path_to(get_node("FloorCast").get_collider()))
 		if floor_type == null:
+			platform = false
 			pass
 		else:
 			if floor_type.is_in_group("Platform"):
 
-				if not Input.is_action_pressed("jump"):
-					#print(floor_type.name)
-					#var pinpoint = get_node("../../Geometry/Path/PathFollow/Platform/Raycaster/Spinner/RayCast").get_collision_point()
-					#var pinnorm = get_node("../../Geometry/Path/PathFollow/Platform/Raycaster/Spinner/RayCast").get_collision_normal()
+				platform = true
 
+				if not Input.is_action_pressed("jump"):
+					
+					#print(floor_type.global_transform.basis.get_euler())
+					set_rot(floor_type.global_transform.basis.get_euler())
+					
+					print(get_rot())
+					
 					var pinpoint = floor_type.get_node("../Raycaster/Spinner/RayCast").get_collision_point()
 					var pinnorm = floor_type.get_node("../Raycaster/Spinner/RayCast").get_collision_normal()
-
 					if not is_moving:
-						set_velocity(Vector3(0,0,0))
-						#global_transform.origin.move_toward() = lerp(global_transform.origin,pinpoint,.5)
-						#global_transform.origin = global_transform.origin.move_toward(floor_type.global_transform.origin,.1)
 
-						#global_transform.origin = global_transform.origin.move_toward(pinpoint,.1)
+						global_transform.origin = lerp(global_transform.origin,pinpoint,plat_smth)
 
-						#look_at(pinnorm,Vector3.UP)
-						#global_transform.basis = floor_type.global_transform.basis
-						global_transform.origin = pinpoint
-						#print(get_node("FloorCast").get_collision_point())
-						#rotation. += floor_type.rotation
-						#set_rot(floor_type.rotation)
-						set_rot(floor_type.global_transform.basis.get_euler())
-						#print(get_rot())
-						var cap_vel = get_rot() * Vector3(1,-1,1)
-						rotation += cap_vel
-						#$CamRoot.set_rotation(global_transform.basis.get_euler())
-						#print(floor_type.global_transform.basis.get_euler())
 					else:
-						set_velocity(floor_type.global_transform.origin)
-						#print(get_velocity())
+
+						pass
+
+				pass
+
 			else:
-				set_velocity(Vector3(0,0,0))
+				
+				platform = false
+				
+				pass
 
 
 		#var floor_angle = rad2deg(acos(n.dot(Vector3(0,1,0))))
