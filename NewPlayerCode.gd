@@ -63,6 +63,7 @@ var stable = Vector3(0,0,0)
 var rot_cal = 0 setget set_rot_cal, get_rot_cal
 var alt_cal = 0
 var pre_stp_lmt = 1
+var plat_chk = false
 
 
 
@@ -527,9 +528,9 @@ func _physics_process(delta):
 		else:
 			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,0) * pre_stp_lmt ,.1)
 
-	elif (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
-		$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(-Input.get_joy_axis(0,JOY_AXIS_0),0,-Input.get_joy_axis(0,JOY_AXIS_1)) * pre_stp_lmt ,.1)
-		pass
+#	elif (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
+#		$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(-Input.get_joy_axis(0,JOY_AXIS_0),0,-Input.get_joy_axis(0,JOY_AXIS_1)) * pre_stp_lmt ,.1)
+#		pass
 
 	else:
 		$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,0) * pre_stp_lmt ,.1)
@@ -637,7 +638,13 @@ func _physics_process(delta):
 							if i.name == name:
 								#global_transform.origin = i.global_transform.origin
 								#global_transform.origin = lerp(global_transform.origin, i.global_transform.origin, plat_smth)
-								global_transform.origin = lerp(global_transform.origin, i.global_transform.origin, .05 * delta)
+								if i.global_transform.origin != global_transform.origin and is_moving == false and plat_chk == false and is_on_floor():
+									i.global_transform.origin = get_node("Pre_Stop").global_transform.origin
+									plat_chk = true
+									print(plat_chk)
+								else:
+									global_transform.origin = lerp(global_transform.origin, i.global_transform.origin, .025)
+								#global_transform.origin = global_transform.origin.move_toward(i.global_transform.origin, 5)
 						
 						#global_transform.origin = lerp(global_transform.origin,pinpoint,plat_smth)
 						pass
@@ -647,7 +654,7 @@ func _physics_process(delta):
 						pass
 
 					if "fin_vel" in floor_type:
-						print(floor_type.fin_vel)
+						#print(floor_type.fin_vel)
 						plat_vel = -floor_type.fin_vel
 					if "fin_rot" in floor_type:
 						#print(-floor_type.fin_rot)

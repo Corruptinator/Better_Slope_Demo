@@ -57,9 +57,9 @@ func _physics_process(delta):
 	fin_vel = get_velocity()
 	fin_rot = get_rot()
 	
-	if get_node("Area").get_overlapping_bodies().size() > 0:
-		print(str(get_node("Area").get_overlapping_bodies().size()-1)+" "+str($Count_Nodes.get_child_count()))
-		pass
+#	if get_node("Area").get_overlapping_bodies().size() > 0:
+#		print(str(get_node("Area").get_overlapping_bodies().size()-1)+" "+str($Count_Nodes.get_child_count()))
+#		pass
 	
 	#print($Count_Nodes.get_children())
 	
@@ -87,21 +87,23 @@ func _physics_process(delta):
 					if "is_moving" in i:
 						var child = Position3D.new()
 						child.name = checker
+						i.plat_chk = false
 						if i.is_moving:
 							#child.global_transform.origin = i.global_transform.origin
-							child.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
-							$Count_Nodes.add_child(child)
+							##child.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
+							#$Count_Nodes.add_child(child)
+							pass
 						else:
 							if i.get_node("FloorCast").is_colliding():
-								child.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
+								##child.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
 								if i.get_node("FloorCast").get_collider() != self:
 									#child.global_transform.origin = i.global_transform.origin
 									
 									#child.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
 									
-									$Count_Nodes.add_child(child)
+									#$Count_Nodes.add_child(child)
 									pass
-						#$Count_Nodes.add_child(child)
+						$Count_Nodes.add_child(child)
 					
 			pass
 
@@ -136,16 +138,20 @@ func _physics_process(delta):
 			for c in $Count_Nodes.get_children():
 				if i.name == c.name:
 					if "is_moving" in i:
+						#c.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
 						if i.is_moving == true:
 							mov_chk = true
 							#c.global_transform.origin = i.global_transform.origin
 							c.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
+							pass
 						else:
 							if mov_chk == true:
 								#c.global_transform.origin = i.global_transform.origin
 								c.global_transform.origin = i.get_node("Pre_Stop").global_transform.origin
 								mov_chk = false
+								i.plat_chk = false
 							pass
+						#print(c.global_transform.origin)
 					pass
 				else:
 					pass
