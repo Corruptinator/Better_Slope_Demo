@@ -526,7 +526,11 @@ func _physics_process(delta):
 		
 		else:
 			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,0) * pre_stp_lmt ,.1)
-	
+
+	elif (abs(Input.get_joy_axis(0,JOY_AXIS_0)) > deadZone or abs(Input.get_joy_axis(0,JOY_AXIS_1)) > deadZone):
+		$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(-Input.get_joy_axis(0,JOY_AXIS_0),0,-Input.get_joy_axis(0,JOY_AXIS_1)) * pre_stp_lmt ,.1)
+		pass
+
 	else:
 		$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,0) * pre_stp_lmt ,.1)
 
