@@ -56,6 +56,13 @@ var platform = false
 var plat_vel = Vector3(0,0,0)
 var plat_smth = 0
 var plat_rot = Vector3(0,0,0)
+var jumped = false
+var plat_stab = false
+var stable = Vector3(0,0,0)
+
+var rot_cal = 0 setget set_rot_cal, get_rot_cal
+var alt_cal = 0
+var pre_stp_lmt = 1
 
 
 
@@ -132,6 +139,15 @@ func chk_x_rot(a):
 	pass
 
 
+func set_rot_cal(a):
+	if rot_cal != a:
+		alt_cal = rot_cal - (a)
+		rot_cal = a
+	pass
+
+func get_rot_cal():
+	return alt_cal
+
 
 
 func _ready():
@@ -139,7 +155,7 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	$CamRoot.set_as_toplevel(true)
 	
-	dif_vel_cal = get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin
+	#dif_vel_cal = get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin
 	
 	#$Rotation.set_as_toplevel(true)
 
@@ -174,8 +190,8 @@ func _physics_process(delta):
 		pass
 
 	$CamRoot.global_transform.origin = self.global_transform.origin
-	$CamRoot/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*80)),0))
-	$CamRoot/H/V.rotation_degrees = (Vector3((camrot_v*(delta*80)),0,0))
+	$CamRoot/H.rotation_degrees = (Vector3(0,(camrot_h*(delta*20)),0))
+	$CamRoot/H/V.rotation_degrees = (Vector3((camrot_v*(delta*20)),0,0))
 	#$Rotation.global_transform.origin = self.global_transform.origin
 
 
@@ -281,13 +297,14 @@ func _physics_process(delta):
 		stop = 1
 
 
-	set_rot(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.basis.get_euler())
-	set_dif_velocity(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin)
+	#set_rot(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.basis.get_euler())
+	#set_dif_velocity(get_node("../../../Objects/Geometry/Path/PathFollow/Platform").global_transform.origin)
 	#set_dif_velocity(get_node("../../../Objects/Geometry/Path/PathFollow/Platform/Raycaster/Spinner/RayCast").get_collision_point())
 	get_node("Label").text = str(get_dif_velocity())
 	if platform == true:
-		plat_rot = -get_rot()
-		plat_vel = -get_dif_velocity()
+		#plat_rot = -get_rot()
+		#plat_vel = -get_dif_velocity()
+		pass
 	elif platform == false:
 		plat_rot = Vector3(0,0,0)
 		plat_vel = Vector3(0,0,0)
@@ -479,7 +496,39 @@ func _physics_process(delta):
 #		avatar_rot = $Rotation.global_transform.basis.get_euler()
 #		avatar_chk = true
 
+	if Input.is_action_pressed("up") or Input.is_action_pressed("down") or Input.is_action_pressed("left") or Input.is_action_pressed("right"):
+		
+		if Input.is_action_pressed("up") and Input.is_action_pressed("left"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(1,0,1) * pre_stp_lmt ,.1)
+			pass
+		elif Input.is_action_pressed("up") and Input.is_action_pressed("right"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(-1,0,1) * pre_stp_lmt ,.1)
+			pass
+		elif Input.is_action_pressed("down") and Input.is_action_pressed("left"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(1,0,-1) * pre_stp_lmt ,.1)
+			pass
+		elif Input.is_action_pressed("down") and Input.is_action_pressed("right"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(-1,0,-1) * pre_stp_lmt ,.1)
+			pass
 
+		elif Input.is_action_pressed("up"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,1) * pre_stp_lmt ,.1)
+			pass
+		elif Input.is_action_pressed("down"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,-1) * pre_stp_lmt ,.1)
+			pass
+		elif Input.is_action_pressed("left"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(1,0,0) * pre_stp_lmt ,.1)
+			pass
+		elif Input.is_action_pressed("right"):
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(-1,0,0) * pre_stp_lmt ,.1)
+			pass
+		
+		else:
+			$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,0) * pre_stp_lmt ,.1)
+	
+	else:
+		$Pre_Stop.transform.origin = lerp($Pre_Stop.transform.origin, Vector3(0,0,0) * pre_stp_lmt ,.1)
 
 
 	# (Experimental: Rotates both the Player and the Camera origin based on what the 3D position is rotated [Transform-Wise/ Eulers])
@@ -523,8 +572,12 @@ func _physics_process(delta):
 		can_jump = true
 		#print("Ground!")
 		var n = get_node("FloorCast").get_collision_normal()
+		var p = get_node("FloorCast").get_collision_point()
 
-
+		if not Input.is_action_pressed("jump") or not Input.is_joy_button_pressed(0,JOY_XBOX_A):
+			jumped = true
+		else:
+			jumped = false
 	# Current Bug/Issue: Somewhat works but moving platforms could use some
 	# work.
 		var floor_type = get_node(get_path_to(get_node("FloorCast").get_collider()))
@@ -536,21 +589,65 @@ func _physics_process(delta):
 
 				platform = true
 
-				if not Input.is_action_pressed("jump"):
+				if not Input.is_action_pressed("jump"): #or not Input.is_joy_button_pressed(0,JOY_XBOX_A):
+				#if jumped == false:
 					
 					#print(floor_type.global_transform.basis.get_euler())
 					set_rot(floor_type.global_transform.basis.get_euler())
 					
-					print(get_rot())
+					#print(get_rot())
 					
-					var pinpoint = floor_type.get_node("../Raycaster/Spinner/RayCast").get_collision_point()
-					var pinnorm = floor_type.get_node("../Raycaster/Spinner/RayCast").get_collision_normal()
+					#var pinpoint = floor_type.get_node("../Raycaster/Spinner/RayCast").get_collision_point()
+					#var pinnorm = floor_type.get_node("../Raycaster/Spinner/RayCast").get_collision_normal()
+					
+					#print(str(pinpoint.y)+" "+str(p.y))
+					
 					if not is_moving:
-
-						global_transform.origin = lerp(global_transform.origin,pinpoint,plat_smth)
+						# https://godotengine.org/qa/50695/rotate-object-around-origin
+						
+						#To place your node at a specific angle around a given point:
+						#position = point + Vector2(cos(angle), sin(angle)) * distance
+						
+						#To make your node rotate around that point, while keeping the same distance:
+						#position = point + (position - point).rotated(angle)
+						
+						###
+						set_rot_cal(floor_type.global_transform.basis.get_euler().length())
+						
+						###
+						#print(abs(get_rot_cal()))
+						
+						#global_transform.origin = floor_type.global_transform.origin + (global_transform.origin - floor_type.global_transform.origin).rotated(global_transform.basis.y,delta * (-get_rot_cal()*100))
+						
+						###
+						#global_transform.origin = lerp(global_transform.origin, (floor_type.global_transform.origin + (global_transform.origin - floor_type.global_transform.origin).rotated(global_transform.basis.y,delta * ( (abs(get_rot_cal()) * 200))) ) , plat_smth) #( (abs(get_rot_cal()) * 100) * 1.2)
+						#global_transform.origin = lerp(global_transform.origin, (floor_type.global_transform.origin + (global_transform.origin - floor_type.global_transform.origin).rotated(global_transform.basis.y,delta * ( (-(get_rot_cal()) * 120))) ) , plat_smth) #( (abs(get_rot_cal()) * 100) * 1.2)
+#						if plat_stab == false:
+#							stable = global_transform.origin
+#							plat_stab = true
+#						global_transform.origin = lerp(global_transform.origin, (floor_type.global_transform.origin + (floor_type.global_transform.origin - stable)), plat_smth) #( (abs(get_rot_cal()) * 100) * 1.2)
+						
+						#print(floor_type.get_node("Count_Nodes").get_children())
+						
+						for i in floor_type.get_node("Count_Nodes").get_children():
+							if i.name == name:
+								#global_transform.origin = i.global_transform.origin
+								#global_transform.origin = lerp(global_transform.origin, i.global_transform.origin, plat_smth)
+								global_transform.origin = lerp(global_transform.origin, i.global_transform.origin, .05 * delta)
+						
+						#global_transform.origin = lerp(global_transform.origin,pinpoint,plat_smth)
+						pass
 
 					else:
+						#plat_stab = false
+						pass
 
+					if "fin_vel" in floor_type:
+						print(floor_type.fin_vel)
+						plat_vel = -floor_type.fin_vel
+					if "fin_rot" in floor_type:
+						#print(-floor_type.fin_rot)
+						plat_rot = -floor_type.fin_rot
 						pass
 
 				pass

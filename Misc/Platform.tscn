@@ -61,7 +61,8 @@ var player = Vector3(0,0,0)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	get_node(\"Spinner/RayCast/Sprite3D\").set_as_toplevel(true)
+	get_node(\"Spinner/RayCast/Sprite3D\").set_as_toplevel(false)
+	set_as_toplevel(true)
 	pass # Replace with function body.
 
 
@@ -75,8 +76,8 @@ func _physics_process(delta):
 	global_transform.origin = get_node(\"../StaticBody\").global_transform.origin
 	global_transform.basis = get_node(\"../StaticBody\").global_transform.basis
 	#print($Spinner/RayCast.get_collision_point())
-#	if $Spinner/RayCast.get_collider().get_node(\"../\").name == get_node(\"../\").name:
-#		get_node(\"Spinner/RayCast/Sprite3D\").global_transform.origin = $Spinner/RayCast.get_collision_point()
+	#if $Spinner/RayCast.get_collider().get_node(\"../\").name == get_node(\"../\").name:
+	get_node(\"Spinner/RayCast/Sprite3D\").global_transform.origin = $Spinner/RayCast.get_collision_point()
 	pass
 "
 

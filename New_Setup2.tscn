@@ -1,9 +1,10 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=20 format=2]
 
-[ext_resource path="res://Misc/NewPlatform.tscn" type="PackedScene" id=1]
-[ext_resource path="res://textures/Grid/materials/Dark/Texture_01.tres" type="Material" id=5]
-[ext_resource path="res://NewPlayerCode.gd" type="Script" id=6]
-[ext_resource path="res://Misc/Platform.tscn" type="PackedScene" id=7]
+[ext_resource path="res://Misc/Platform.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Misc/NewPlatform.tscn" type="PackedScene" id=2]
+[ext_resource path="res://NewPlayerCode.gd" type="Script" id=3]
+[ext_resource path="res://textures/Grid/materials/Dark/Texture_01.tres" type="Material" id=4]
+[ext_resource path="res://icon.png" type="Texture" id=5]
 
 [sub_resource type="GDScript" id=1]
 script/source = "extends Spatial
@@ -63,8 +64,30 @@ func _ready():
 #	pass
 "
 
-[sub_resource type="Animation" id=8]
-resource_name = "Path"
+[sub_resource type="GDScript" id=8]
+script/source = "extends Spatial
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#	pass
+
+func _physics_process(delta):
+	#rotate_y(.01)
+	pass
+"
+
+[sub_resource type="Animation" id=9]
 length = 20.0
 loop = true
 tracks/0/type = "value"
@@ -92,8 +115,44 @@ tracks/1/keys = {
 "values": [ Vector3( 0, 0, 0 ), Vector3( 0, 90, 0 ), Vector3( 0, 0, 0 ) ]
 }
 
-[sub_resource type="Animation" id=9]
-resource_name = "moving"
+[sub_resource type="Animation" id=10]
+resource_name = "Move"
+length = 5.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2.5, 5 ),
+"transitions": PoolRealArray( -2, -2, 1 ),
+"update": 0,
+"values": [ Vector3( -4.6763, 6.71073, -5.91822 ), Vector3( -4.6763, -0.960686, -5.91822 ), Vector3( -4.6763, 6.71073, -5.91822 ) ]
+}
+
+[sub_resource type="GDScript" id=11]
+script/source = "extends AnimationPlayer
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	play(\"Move\")
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#	pass
+"
+
+[sub_resource type="Animation" id=12]
 length = 7.0
 loop = true
 tracks/0/type = "value"
@@ -109,33 +168,11 @@ tracks/0/keys = {
 "values": [ Vector3( -11.0117, 6.4699, -5.65134 ), Vector3( -11.0117, 1.03964, -5.65134 ), Vector3( -11.0117, 6.4699, -5.65134 ) ]
 }
 
-[sub_resource type="GDScript" id=10]
-script/source = "extends Spatial
+[sub_resource type="ProceduralSky" id=13]
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = \"text\"
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
-func _physics_process(delta):
-	rotate_y(.01)
-"
-
-[sub_resource type="ProceduralSky" id=11]
-
-[sub_resource type="Environment" id=12]
+[sub_resource type="Environment" id=14]
 background_mode = 2
-background_sky = SubResource( 11 )
+background_sky = SubResource( 13 )
 
 [node name="Setup" type="Spatial"]
 script = SubResource( 1 )
@@ -149,7 +186,7 @@ script = SubResource( 1 )
 ]]
 transform = Transform( 0.670932, 0, 0.741519, 0, 1, 0, -0.741519, 0, 0.670932, 1.44157, 8.7854, -10.3984 )
 collision_layer = 0
-script = ExtResource( 6 )
+script = ExtResource( 3 )
 
 [node name="CollisionShape2" type="CollisionShape" parent="Objects/Models/KinematicBody"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0.71034, 0 )
@@ -228,6 +265,13 @@ __meta__ = {
 [node name="Rot_Snp_Pos" type="Position3D" parent="Objects/Models/KinematicBody"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12837, 0 )
 
+[node name="Pre_Stop" type="Position3D" parent="Objects/Models/KinematicBody"]
+
+[node name="Sprite3D" type="Sprite3D" parent="Objects/Models/KinematicBody/Pre_Stop"]
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0 )
+visible = false
+texture = ExtResource( 5 )
+
 [node name="Reorientation" type="Position3D" parent="Objects/Models"]
 transform = Transform( 1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 9.98398, 0 )
 
@@ -240,21 +284,21 @@ use_collision = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6.45817, -1, 0 )
 width = 43.7444
 depth = 39.5321
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox2" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, -16.7114 )
 width = 31.1486
 height = 0.296158
 depth = 39.5321
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox3" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -15.7762 )
 width = 26.1536
 height = 14.9474
 depth = 15.8597
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox4" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.982, 2, -11.358 )
@@ -262,7 +306,7 @@ operation = 2
 width = 9.98751
 height = 4.0
 depth = 10.2682
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox5" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.993, 3, -12.614 )
@@ -270,18 +314,18 @@ operation = 2
 width = 9.98751
 height = 6.0
 depth = 4.25243
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox7" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 0.941676, 0.33652, 0, -0.33652, 0.941676, 0, 0, 0, 1, -4.65074, -1.16949, -12.614 )
 width = 9.98751
 height = 6.0
 depth = 4.25243
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox6" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 0.750607, -0.660749, 0, 0.660749, 0.750607, 8.20757, -0.123166, -7.69963 )
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox8" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, -7.81144, 4.17286, -16.0182 )
@@ -289,7 +333,7 @@ operation = 2
 width = 16.0134
 height = 3.55932
 depth = 4.25243
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox10" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.81144, 4.18876, -19.7601 )
@@ -297,12 +341,12 @@ operation = 2
 width = 11.582
 height = 3.58908
 depth = 4.25243
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox9" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.97967, 4.2479, -8.71297 )
 operation = 2
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox11" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 0.787355, -0.6165, 0, 0.6165, 0.787355, 0, 0, 0, 1, 2.966, 9.412, -19.782 )
@@ -310,14 +354,14 @@ operation = 2
 width = 16.0134
 height = 3.55932
 depth = 4.25243
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox12" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 0.787355, -0.6165, 0, 0.6165, 0.787355, 0, 0, 0, 1, -1.57694, 3.02446, -19.782 )
 width = 6.29218
 height = 0.892661
 depth = 2.63902
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox13" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.28473, 8.9723, -16.9133 )
@@ -325,42 +369,42 @@ operation = 2
 width = 3.0
 height = 3.0
 depth = 3.0
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox14" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( -1.43276e-07, -0.476039, 0.879424, -7.75565e-08, 0.879424, 0.476039, -1, 0, -1.62921e-07, 15.8073, 8.89573, -20.7124 )
 width = 3.0
 height = 0.352718
 depth = 10.2404
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox15" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 21.7349, 11.3214, -4.82643 )
 width = 3.0
 height = 0.352718
 depth = 34.964
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox16" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( -1.62921e-07, -0.906308, 0.422618, 0, 0.422618, 0.906308, -1, 1.47656e-07, -6.88533e-08, 13.0634, -4.47428, 10.993 )
 width = 3.0
 height = 0.352718
 depth = 34.964
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox17" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( -1.62921e-07, -0.707107, 0.707107, 0, 0.707107, 0.707107, -1, 1.15202e-07, -1.15202e-07, 7.98653, -0.987573, 3.03214 )
 width = 3.0
 height = 0.352718
 depth = 34.964
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="CSGBox18" type="CSGBox" parent="Objects/Geometry/CSGCombiner"]
 transform = Transform( -1.62921e-07, -0.5, 0.866025, 0, 0.866025, 0.5, -1, 8.14603e-08, -1.41093e-07, 5.1962, 2.62417, -2.36309 )
 width = 3.0
 height = 0.352718
 depth = 34.964
-material = ExtResource( 5 )
+material = ExtResource( 4 )
 
 [node name="Path" type="Path" parent="Objects/Geometry"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.29234, 6.73431, -5.91738 )
@@ -368,33 +412,44 @@ curve = SubResource( 6 )
 script = SubResource( 7 )
 
 [node name="PathFollow" type="PathFollow" parent="Objects/Geometry/Path"]
-transform = Transform( 0.995559, 0, 0.0941078, 0, 0.999999, 0, -0.0941081, 0, 0.995557, 0.012663, -0.0197606, 0.245753 )
-offset = 0.246679
+transform = Transform( 0.99999, 0, 0, 0, 0.999999, 0, 0, 0, 0.999988, 0.0175407, -0.0235806, -0.000843048 )
 rotation_mode = 0
 loop = false
 
-[node name="Platform" parent="Objects/Geometry/Path/PathFollow" instance=ExtResource( 7 )]
+[node name="Platform2" type="Spatial" parent="Objects/Geometry/Path/PathFollow"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1.00001, 0, 0, 0 )
+script = SubResource( 8 )
+
+[node name="Spatial" type="Spatial" parent="Objects/Geometry/Path/PathFollow/Platform2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.000999928 )
+
+[node name="Platform" parent="Objects/Geometry/Path/PathFollow/Platform2/Spatial" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.001 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Objects/Geometry/Path"]
-anims/Path = SubResource( 8 )
+anims/Path = SubResource( 9 )
 
-[node name="Platform" parent="Objects/Geometry" instance=ExtResource( 7 )]
+[node name="Platform3" type="Spatial" parent="Objects/Geometry"]
+transform = Transform( 0.99999, 0, 0, 0, 0.999999, 0, 0, 0, 0.999998, -4.6763, 6.71073, -5.91822 )
+script = SubResource( 8 )
+
+[node name="Spatial" type="Spatial" parent="Objects/Geometry/Platform3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.000999928 )
+
+[node name="Platform" parent="Objects/Geometry/Platform3/Spatial" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.001 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Objects/Geometry/Platform3"]
+anims/Move = SubResource( 10 )
+script = SubResource( 11 )
+
+[node name="Platform" parent="Objects/Geometry" instance=ExtResource( 1 )]
 
 [node name="StaticBody" parent="Objects/Geometry/Platform" index="0"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -11.0117, 6.4699, -5.65134 )
 
 [node name="AnimationPlayer" parent="Objects/Geometry/Platform/StaticBody" index="2"]
-anims/moving = SubResource( 9 )
-
-[node name="Platform2" type="Spatial" parent="Objects/Geometry"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.99677, 7.21213, -4.4136 )
-script = SubResource( 10 )
-
-[node name="Spatial" type="Spatial" parent="Objects/Geometry/Platform2"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.000999928 )
-
-[node name="Platform" parent="Objects/Geometry/Platform2/Spatial" instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.001 )
+anims/moving = SubResource( 12 )
 
 [node name="Props" type="Spatial" parent="Objects"]
 
@@ -408,10 +463,9 @@ directional_shadow_blend_splits = true
 directional_shadow_bias_split_scale = 0.5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Objects/Shaders"]
-environment = SubResource( 12 )
+environment = SubResource( 14 )
 
 [node name="Node2D" type="Node2D" parent="."]
 
-[editable path="Objects/Geometry/Path/PathFollow/Platform"]
+[editable path="Objects/Geometry/Path/PathFollow/Platform2/Spatial/Platform"]
 [editable path="Objects/Geometry/Platform"]
-[editable path="Objects/Geometry/Platform2/Spatial/Platform"]
